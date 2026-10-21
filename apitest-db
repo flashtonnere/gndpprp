@@ -1,0 +1,27 @@
+import { createClient } from '@supabase/supabase-js';
+
+// On initialise Supabase avec les variables d'environnement de Vercel
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+export default async function handler(req, res) {
+    try {
+        // On essaie de faire une simple requête de lecture sur votre table "utilisateurs"
+        const { data, error } = await supabase.from('utilisateurs').select('*').limit(1);
+
+        if (error) {
+            // Si Supabase répond mais renvoie une erreur (ex: table introuvable)
+            return res.status(500).json({ success: false, message: "Erreur Supabase : " + error.message });
+        }
+
+        // Si tout va bien !
+        return res.status(200).json({ 
+            success: true, 
+            message: "Connexion réussie avec Supabase !", 
+            donneesRecuperees: data 
+        });
+
+    } catch (err) {
+        // Si Vercel n'arrive même pas à contacter Supabase (ex: mauvaise URL)
+        return res.status(500).json({ success: false, message: "Erreur de connexion : " + err.message });
+    }
+}
